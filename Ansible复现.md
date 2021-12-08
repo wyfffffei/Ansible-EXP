@@ -6,17 +6,27 @@
 
 ### 拓扑(HOST-ONLY网卡)
 
- ![image-20211208005537034](C:\Users\h3wyf\AppData\Roaming\Typora\typora-user-images\image-20211208005537034.png)
-
-
+ ![centos-lan.png](images/centos-lan.png)
 
 ### 前提的前提
 
 - Ansible版本 2.12+
-
-- 控制节点：Python 3.8
+- 控制节点：Python 3.8+
 - 被管理节点：Python 2 (version 2.6 or later) or Python 3 (version 3.5 or later)
-- 管理云中的机器，选用该云中的机器作为控制节点更合适
+- 选用该被管理云中的机器作为控制节点更合适
+- centos配置网卡
+
+```bash
+# `ip a`查看网卡名
+$ vi /etc/sysconfig/network-scripts/ifcfg-enp0s8
+
+# 配置信息修改
+# BOOTPROTO=static/dhcp/none
+# noboot=no => yes
+
+$ systemctl restart network
+```
+
 - ubuntu安装ssh
 
 ```bash
@@ -55,7 +65,15 @@ vi /etc/network/interfaces
 
 
 
-### 控制节点的先决条件(ubuntu-control)
+### 控制节点的先决条件
+
+#### centos 7.0
+
+```bash
+...
+```
+
+#### ubuntu 20.04.3
 
 ```bash
 #!/bin/bash
@@ -67,12 +85,34 @@ sudo apt update && sudo apt install python3-pip -y
 # 全局安装：`sudo ...`
 # 除非完全了解修改系统上全局文件的含义，否则建议with `--user` 参数
 pip install paramiko --user 
-
 ```
 
 
 
 ### 控制节点安装Ansible
+
+#### 在RHEL、CentOS或Fedora上安装Ansible
+
+在 CentOS 上：
+
+```bash
+$ sudo yum install epel-release
+$ sudo yum install ansible
+```
+
+在 Fedora 上：
+
+```bash
+$ sudo dnf install ansible
+```
+
+在 RHEL 上：
+
+```bash
+$ sudo yum install ansible
+```
+
+
 
 #### 在 Ubuntu 上安装 Ansible
 
@@ -126,30 +166,7 @@ $ sudo apt install ansible
 
 
 
-#### 在RHEL、CentOS或Fedora上安装Ansible
-
-在 Fedora 上：
-
-```bash
-$ sudo dnf install ansible
-```
-
-在 RHEL 上：
-
-```bash
-$ sudo yum install ansible
-```
-
-在 CentOS 上：
-
-```bash
-$ sudo yum install epel-release
-$ sudo yum install ansible
-```
-
-
-
-## 实现
+## Ansible拆解
 
 ### 配置文件
 
