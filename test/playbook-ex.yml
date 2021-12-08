@@ -1,0 +1,8 @@
+---
+- name: Playbook Example
+  hosts: all
+  tasks:
+    - name: Leaving a mark
+      command: "touch /tmp/ansible_log"
+      
+...
