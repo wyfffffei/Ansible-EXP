@@ -228,36 +228,11 @@ $ python -m pip install --user paramiko
 
 
 
-### 补充
+### 补充参数
 
 ```bash
 export ANSIBLE_HOST_KEY_CHECKING=False
 
-```
-
-
-
-## Ansible手册
-
-### 配置文件
-
-Changes can be made and used in a configuration file which will be searched for in the following order:
-
-> - `ANSIBLE_CONFIG` (environment variable if set)
-> - `ansible.cfg` (in the current directory)
-> - `~/.ansible.cfg` (in the home directory)
-> - `/etc/ansible/ansible.cfg`
-
-Ansible will process the above list and use the first file found, all others are ignored.
-
-
-
-### Jinja2
-
-#### 默认值
-
-```
-{{ some_variable | default(5) }}
 ```
 
 
@@ -273,14 +248,14 @@ $ pwd
 > ~/.ssh
 $ ssh-keygen -t rsa
 
-$ ssh-copy-id -i $HOME/.ssh/id_rsa.pub $(remotename)@$(ip) -p 22
+$ ssh-copy-id -i $HOME/.ssh/id_rsa.pub "${remotename}"@${ip} -p 22
 
 # ansible -m ping 测试
-$ echo $(ip) > /etc/ansible/hosts
+$ echo ${ip} > /etc/ansible/hosts
 $ ansible all -m ping
 
 # 登录检查
-$ ssh $(remotename)@$(ip)
+$ ssh "${remotename}"@${ip}
 ```
 
 2. 通过playbook自动配置
@@ -316,5 +291,9 @@ all:
     become_user: root
     become_method: sudo # 提权方法，例如Debian 9最小化安装方式等，默认无sudo，可改用su
 ...
+```
+
+```bash
+$ ansible all -i hosts.yml ssh-copy-id.yml
 ```
 

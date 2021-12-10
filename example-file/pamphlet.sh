@@ -3,19 +3,21 @@
 # ad hoc commands
 # format: $ ansible [pattern] -m [module] -a "[module options]"
 
-# @PARAMS -a: command
-# @PARAMS -m: module name
-# @PARAMS -u: connector
-# @PARAMS -K/--ask-become-pass: sudo/su..
-# @PARAMS -f: parallel forks (default=5)
+# @PARAM pattern: group/host  <-> √
+# @PARAM -i: inventroy        <-> √
+# @PARAM -m: module name
+# @PARAM -a: command/options
+# @PARAM -u: connector
+# @PARAM -K/--ask-become-pass: sudo/su..
+# @PARAM -f: parallel forks (default=5)
 
-# simple commands
+# simple examples
 # live command
 $ ansible all -a "/bin/echo hello"
 # using ping module to test all the nodes in the inventory
 $ ansible all -m ping
 # shell module with variable
-$ ansible all -m ansible.builtin.shell -a 'echo $DATE'
+$ ansible all -m ansible.builtin.shell -a 'echo $(date)'
 
 # Managing files (copy,file module) | more: <https://docs.ansible.com/ansible/latest/collections/ansible/builtin/file_module.html#file-module>
 # copy module

@@ -1,0 +1,9 @@
+---
+- hosts: all
+  vars:
+    env_HOME: "{{ lookup('env','HOME') }}"
+  tasks:
+  - name: test
+    debug:
+      msg: "env:HOME is {{ env_HOME }}"
+...

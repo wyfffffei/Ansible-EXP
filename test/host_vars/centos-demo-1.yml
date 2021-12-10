@@ -1,0 +1,3 @@
+# 文件名需和`inventory`中的`主机名`一致
+password: "123456"
+# password: {{ vault_password }}
