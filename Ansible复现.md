@@ -8,45 +8,52 @@
 
  ![centos-lan.png](images/centos-lan.png)
 
+| name           | ip                | user/root pass |
+| -------------- | ----------------- | -------------- |
+| centos-demo-1  | 192.168.144.17/24 | 123456         |
+| centos-control | 192.168.144.18/24 | 666            |
+
+
+
 ### 前提的前提
 
 - Ansible版本 2.12+
 - 控制节点：Python 3.8+
 - 被管理节点：Python 2 (version 2.6 or later) or Python 3 (version 3.5 or later)
 - 选用该被管理云中的机器作为控制节点更合适
-- centos配置网卡
+
+#### centos 7.0
 
 ```bash
-# `ip a`查看网卡名
-$ vi /etc/sysconfig/network-scripts/ifcfg-enp0s8
+# 添加sudo
+su root
+chmod u+w /etc/sudoers
+vi /etc/sudoers
+# root ALL=(ALL)ALL
+# `username` ALL=(ALL)ALL
 
+# `ip a`查看网卡名
+sudo vi /etc/sysconfig/network-scripts/ifcfg-enp0s8
 # 配置信息修改
 # BOOTPROTO=static/dhcp/none
 # noboot=no => yes
+sudo systemctl restart network
 
-$ systemctl restart network
+# 配置tsinghua镜像源（选）
+# 先备份 /etc/yum.repos.d/ 内的文件（CentOS 7 及之前为 CentOS-Base.repo，CentOS 8 为CentOS-Linux-*.repo）
+# 文件替换下面的'*'
+sudo sed -e 's|^mirrorlist=|#mirrorlist=|g' \
+         -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://mirrors.tuna.tsinghua.edu.cn|g' \
+         -i.bak \
+         /etc/yum.repos.d/CentOS-*.repo
+sudo yum makecache
 ```
 
-- ubuntu安装ssh
 
-```bash
-#!/bin/bash
 
-# 修改root密码
-sudo passwd root
-> ubuntu-control
+#### debian 11.1
 
-# 安装配置ssh
-sudo apt update && sudo apt install openssh-sftp-server ncurses-term ssh-import-id openssh-client
-sudo vi /etc/ssh/ssh_config
-# 去注释 PasswordAuthentication yes
-sudo vi /etc/ssh/sshd_config
-# 去注释 PermitRootLogin yes
-sudo /etc/init.d/ssh restart
-
-```
-
-- debian配置网卡 <https://www.debian.org/doc/manuals/debian-handbook/sect.network-config.zh-cn.html>
+> <https://www.debian.org/doc/manuals/debian-handbook/sect.network-config.zh-cn.html>
 
 ```bash
 # 默认无sudo
@@ -65,38 +72,84 @@ vi /etc/network/interfaces
 
 
 
+#### ubuntu 20.04.3
+
+```bash
+# 修改root密码
+sudo passwd root
+> ubuntu-control
+
+# 安装配置ssh
+sudo apt update && sudo apt install openssh-sftp-server ncurses-term ssh-import-id openssh-client
+sudo vi /etc/ssh/ssh_config
+# 去注释 PasswordAuthentication yes
+sudo vi /etc/ssh/sshd_config
+# 去注释 PermitRootLogin yes
+sudo /etc/init.d/ssh restart
+```
+
+
+
 ### 控制节点的先决条件
 
 #### centos 7.0
 
 ```bash
-...
+# 安装python3.8和pip
+sudo yum update && sudo yum install epel-release
+sudo yum -y groupinstall "Development tools"
+sudo yum -y install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel
+sudo yum install libffi-devel -y
+
+sudo yum install wget
+wget https://www.python.org/ftp/python/3.9.9/Python-3.9.9.tgz
+# wget http://npm.taobao.org/mirrors/python/3.9.9/Python-3.9.9.tgz
+tar zxvf Python-3.9.9.tgz
+
+mkdir /usr/local/python3 #创建编译安装目录
+cd Python-3.9.9
+./configure --prefix=/usr/local/python3
+make && sudo make install
+
+# 查看当前python软连接
+ll /usr/bin/ | grep python
+rm -rf /usr/bin/python
+#添加python3的软链接 
+ln -s /usr/local/python3/bin/python3 /usr/bin/python
+rm -rf /usr/bin/pip
+#添加 pip3 的软链接
+ln -s /usr/local/python3/bin/pip3 /usr/bin/pip
+
+# 更改yum默认配置
+# ↓ #! /usr/bin/python => #! /usr/bin/python2 ↓
+vi /usr/bin/yum 
+vi /usr/libexec/urlgrabber-ext-down 
+vi /usr/bin/yum-config-manager
+# 可能没有
+
+# 安装连接模块
+# 全局安装：`sudo ...`,除非完全了解修改系统上全局文件的含义，否则建议with `--user` 参数
+python -m pip install --user paramiko
+# pip install --user -i https://pypi.tuna.tsinghua.edu.cn/simple paramiko
+sudo yum install sshpass
 ```
 
 #### ubuntu 20.04.3
 
 ```bash
-#!/bin/bash
-
-# 安装pip（确保是最新版）
-sudo apt update && sudo apt install python3-pip -y
-
-# 安装连接模块
-# 全局安装：`sudo ...`
-# 除非完全了解修改系统上全局文件的含义，否则建议with `--user` 参数
-pip install paramiko --user 
+$ sudo apt update && sudo apt install python3-pip -y
+$ pip install paramiko --user 
 ```
 
 
 
 ### 控制节点安装Ansible
 
-#### 在RHEL、CentOS或Fedora上安装Ansible
+#### RHEL、CentOS或Fedora
 
 在 CentOS 上：
 
 ```bash
-$ sudo yum install epel-release
 $ sudo yum install ansible
 ```
 
@@ -114,7 +167,7 @@ $ sudo yum install ansible
 
 
 
-#### 在 Ubuntu 上安装 Ansible
+#### Ubuntu
 
 Ubuntu 构建在 [PPA](https://launchpad.net/~ansible/+archive/ubuntu/ansible) 中可用（官方推荐）。
 
@@ -131,7 +184,7 @@ $ sudo apt install ansible
 
 
 
-#### 在Debian上安装Ansible
+#### Debian
 
 Debian 用户可以使用与 Ubuntu PPA 相同的源代码（使用下表）。
 
@@ -166,7 +219,25 @@ $ sudo apt install ansible
 
 
 
-## Ansible拆解
+#### pip（不建议）
+
+```bash
+$ python -m pip install --user ansible
+$ python -m pip install --user paramiko
+```
+
+
+
+### 补充
+
+```bash
+export ANSIBLE_HOST_KEY_CHECKING=False
+
+```
+
+
+
+## Ansible手册
 
 ### 配置文件
 
@@ -180,4 +251,70 @@ Changes can be made and used in a configuration file which will be searched for 
 Ansible will process the above list and use the first file found, all others are ignored.
 
 
+
+### Jinja2
+
+#### 默认值
+
+```
+{{ some_variable | default(5) }}
+```
+
+
+
+## 实验
+
+### ssh-copy-id配置免密登录
+
+1. 直接配置
+
+```bash
+$ pwd
+> ~/.ssh
+$ ssh-keygen -t rsa
+
+$ ssh-copy-id -i $HOME/.ssh/id_rsa.pub $(remotename)@$(ip) -p 22
+
+# ansible -m ping 测试
+$ echo $(ip) > /etc/ansible/hosts
+$ ansible all -m ping
+
+# 登录检查
+$ ssh $(remotename)@$(ip)
+```
+
+2. 通过playbook自动配置
+
+```yml
+--- # hosts.yml
+all:
+  hosts:
+    centos-demo-1:
+      ansible_user: centos-demo-1
+      ansible_host: 192.168.144.17
+      ansible_port: 22
+      ansible_password: "{{ password }}" # 需要另外配置var文件，定义password变量和值
+      ansible_ssh_private_key_file: /home/centos-control/.ssh/id_rsa
+      ansible_become: true
+      ansible_become_user: root
+      ansible_become_method: sudo
+      ansible_become_password: "{{ password }}"
+...
+```
+
+```yml
+--- # ssh-copy-id.yml
+- hosts: all # 对应`hosts`文件中定义的`主机组`名
+  gather_facts: no # 如果不需要用到远程主机上的环境变量、运行时参数等，则可以跳过 gather_facts 阶段
+  tasks:
+  - name: deploy local rsa pub to remote host # 一句话描述任务
+    authorized_key: # 任务使用到的 Ansible Module 名称，以下用缩进表示使用一系列参数传递给当前模块
+      user: centos-demo-1 # 要配置root免密登录，就修改为root
+      state: present
+      key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+    become: true
+    become_user: root
+    become_method: sudo # 提权方法，例如Debian 9最小化安装方式等，默认无sudo，可改用su
+...
+```
 

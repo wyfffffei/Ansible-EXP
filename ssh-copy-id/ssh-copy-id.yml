@@ -1,0 +1,13 @@
+---
+- hosts: all # 对应`hosts`文件中定义的`主机组`名
+  gather_facts: no # 如果不需要用到远程主机上的环境变量、运行时参数等，则可以跳过 gather_facts 阶段
+  tasks:
+  - name: deploy local rsa pub to remote host # 一句话描述任务
+    authorized_key: # 任务使用到的 Ansible Module 名称，以下用缩进表示使用一系列参数传递给当前模块
+      user: centos-demo-1 # 要配置root免密登录，就修改为root
+      state: present
+      key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+    become: true
+    become_user: root
+    become_method: sudo # 提权方法，例如Debian 9最小化安装方式等，默认无sudo，可改用su
+...
