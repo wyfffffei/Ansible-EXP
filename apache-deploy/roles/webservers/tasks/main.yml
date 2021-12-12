@@ -1,0 +1,11 @@
+--- # 安装apache服务器
+- name: Install apache server
+  yum:
+    name: httpd
+    state: latest
+
+- name: ensure apache server is running
+  service:
+    name: httpd
+    state: started
+...

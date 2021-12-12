@@ -294,6 +294,71 @@ all:
 ```
 
 ```bash
-$ ansible all -i hosts.yml ssh-copy-id.yml
+$ ansible-playbook -i hosts.yml ssh-copy-id.yml
 ```
+
+
+
+### 安装Apache
+
+```yml
+--- # hosts.yml
+webserver:
+  hosts:
+    centos-demo-1:
+      ansible_user: centos-demo-1
+      ansible_host: "{{ demo_1_host }}"
+      ansible_port: 22
+      ansible_password: "{{ demo_1_password }}"
+      ansible_ssh_private_key_file: /home/centos-control/.ssh/id_rsa
+      ansible_become: true
+      ansible_become_user: root
+      ansible_become_method: sudo
+      ansible_become_password: "{{ demo_1_password }}"
+monitoring:
+...
+```
+
+```yml
+--- # apache-deploy.yml
+## 批量部署Apache服务器
+
+# 信息收集（技巧）
+- hosts: monitoring
+
+  tasks: []
+
+# 部署Apache服务器
+- hosts: centos-demo-1
+
+  roles:
+    - webservers
+  
+  tags:
+    - web
+...
+```
+
+```yml
+# /roles/webservers/tasks/main.yml
+--- # 安装apache服务器
+- name: Install apache server
+  yum:
+    name: httpd
+    state: latest
+
+- name: ensure apache server is running
+  service:
+    name: httpd
+    state: started
+...
+```
+
+
+
+
+
+
+
+
 

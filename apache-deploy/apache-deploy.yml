@@ -1,0 +1,17 @@
+---
+## 批量部署Apache服务器
+
+# 信息收集（技巧）
+- hosts: monitoring
+
+  tasks: []
+
+# 部署Apache服务器
+- hosts: centos-demo-1
+
+  roles:
+    - webservers
+  
+  tags:
+    - web
+...

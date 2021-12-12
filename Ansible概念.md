@@ -1,10 +1,50 @@
-## Ansible概念
+# Ansible概念
 
 ### 控制节点（Control node）
 
+任何安装了 Ansible 的机器。您可以作为控制节点调用`/usr/bin/ansible`或`/usr/bin/ansible-playbook`命令，以控制节点机器。您可以将任何安装了 Python 的计算机用作控制节点——笔记本电脑、共享台式机和服务器都可以运行 Ansible。但是，您不能将 Windows 机器用作控制节点。另外，控制节点可以有多个。
+
+
+
 ### 被管理节点（Managed nodes）
 
+您使用 Ansible 管理的网络设备（或服务器），有时也称为“主机”。不需要安装Ansible。
+
+
+
 ### 库存（Inventory）
+
+受管理节点列表。库存文件可以为每个受管节点指定 IP 地址等信息，还创建和嵌套组以便于扩展。
+
+#### 示例
+
+```yml
+--- # [webserver] 192.168.144.17
+webserver:
+  hosts:
+    centos-demo-1:
+      ansible_host: 192.168.144.17
+      ansible_port: 22
+...
+```
+
+```yml
+--- # [webservers]demo-1-2 [ungrouped]demo-3
+all:
+  hosts:
+    demo-3.example.com:
+  children:
+    webservers:
+      hosts:
+        centos-demo-1:
+        centos-demo-2:
+```
+
+#### 默认组
+
+有两个默认组：`all`和`ungrouped`。`all`组包含每个主机，`ungrouped`组包含所有没被分组的主机。每个主机至少会属于两个组（`all`和`ungrouped` 或 `all`和其他一些组）。虽然`all`并且`ungrouped`始终存在，但它们可以是隐式的，不出现在`group_names`中。
+
+
 
 ### 集合（Collections）
 
@@ -255,6 +295,8 @@ tasks:
 
 #### 查找
 
+##### lookup("file", path_to_file)
+
 ```yml
   vars:
     host_file: "{{ lookup('file', '/etc/hosts') }}"
@@ -266,7 +308,11 @@ tasks:
 # ok: [centos-demo-1] => {
 #     "msg": "host file is 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4\n::1     #     localhost localhost.localdomain localhost6 localhost6.localdomain6"
 # }
+```
 
+##### lookup("env", "HOME")
+
+```yml
   vars:
     env_HOME: "{{ lookup('env','HOME') }}"
   tasks:
@@ -278,6 +324,33 @@ tasks:
 #     "msg": "env:HOME is /home/centos-control"
 # }
 ```
+
+
+
+#### 模板（Templates）
+
+##### python2和3的差异
+
+```yml
+vars:
+  hosts:
+    testhost1: 127.0.0.2
+    testhost2: 127.0.0.3
+tasks:
+  - debug:
+      msg: '{{ item }}'
+    # Only works with Python 2
+    # loop: "{{ hosts.keys() }}"
+    # loop: "{{ hosts.iteritems() }}"
+    
+    # Works with both Python 2 and Python 3
+    loop: "{{ hosts.keys() | list }}"
+    loop: "{{ hosts.items() | list }}"
+```
+
+
+
+
 
 
 
