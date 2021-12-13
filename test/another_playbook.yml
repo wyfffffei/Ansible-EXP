@@ -1,0 +1,9 @@
+---
+- name: when method
+  file:
+    state: touch
+    dest: /tmp/3.txt
+  when:
+    - ansible_distribution == "CentOS"
+  tags:
+    - test when method

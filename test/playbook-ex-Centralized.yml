@@ -1,0 +1,21 @@
+---
+- hosts: centos-demo-1
+  tasks:
+  - name: Leaving a mark
+    file:
+      state: touch
+      dest: /tmp/1.txt
+    when:
+      - ansible_distribution == "CentOS"
+    notify:
+      - create another file
+
+  - name: test the include method
+    include: another_playbook.yml
+  
+  handlers:
+    - name: create another file
+      file:
+        state: touch
+        dest: /tmp/2.txt
+...

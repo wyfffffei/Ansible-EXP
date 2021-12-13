@@ -1,22 +1,22 @@
 # Ansible概念
 
-### 控制节点（Control node）
+## 控制节点（Control node）
 
 任何安装了 Ansible 的机器。您可以作为控制节点调用`/usr/bin/ansible`或`/usr/bin/ansible-playbook`命令，以控制节点机器。您可以将任何安装了 Python 的计算机用作控制节点——笔记本电脑、共享台式机和服务器都可以运行 Ansible。但是，您不能将 Windows 机器用作控制节点。另外，控制节点可以有多个。
 
 
 
-### 被管理节点（Managed nodes）
+## 被管理节点（Managed nodes）
 
 您使用 Ansible 管理的网络设备（或服务器），有时也称为“主机”。不需要安装Ansible。
 
 
 
-### 库存（Inventory）
+## 库存（Inventory）
 
 受管理节点列表。库存文件可以为每个受管节点指定 IP 地址等信息，还创建和嵌套组以便于扩展。
 
-#### 示例
+### 示例
 
 ```yml
 --- # [webserver] 192.168.144.17
@@ -40,32 +40,194 @@ all:
         centos-demo-2:
 ```
 
-#### 默认组
+### 默认组
 
 有两个默认组：`all`和`ungrouped`。`all`组包含每个主机，`ungrouped`组包含所有没被分组的主机。每个主机至少会属于两个组（`all`和`ungrouped` 或 `all`和其他一些组）。虽然`all`并且`ungrouped`始终存在，但它们可以是隐式的，不出现在`group_names`中。
 
 
 
-### 集合（Collections）
+## 结构（分散式）
 
-### 模块（Modules）
+```yml
+---
+inventory.yml # 库存↑
 
-### 任务（Tasks）
+playbook.yml # 剧本↓
+roles/ # 角色
+  common/
+    tasks/ # 任务
+    handlers/ # 处理者
+    files/ # 文件
+    templates/ # 模板
+    vars/ # 变量
+    defaults/ # 默认值
+    meta/
+  webservers/
+    tasks/
+    ..
+```
 
-### 剧本（Playbooks）
 
-#### Jinja2过滤器
+
+### roles / tasks + handlers + files
+
+```yml
+--- # /roles/common/tasks/main.yml
+- name: Install libselinux-python
+  yum: name=libselinux-python state=present
+
+- name: Reload ansible_facts
+  setup:
+
+- name: Copy the EPEL repository definition
+  copy: src=epel.repo dest=/etc/yum.repos.d/epel.repo # /roles/common/files/epel.repo
+
+- name: Create the GPG key for EPEL
+  copy: src=RPM-GPG-KEY-EPEL-6 dest=/etc/pki/rpm-gpg
+
+- name: Set up iptables rules
+  copy: src=iptables-save dest=/etc/sysconfig/iptables
+  notify: restart iptables # -> 调用handlers
+```
+
+```yml
+--- # /roles/common/handlers/main.yml -> 响应notify
+- name: restart iptables
+  service: name=iptables state=restarted
+```
+
+### roles / tasks + templates + handlers
+
+```yml
+--- # /roles/mysql/tasks/main.yml
+- name: Install Mysql package
+  yum: name={{ item }} state=present
+  with_items:
+   - mysql-server
+   - MySQL-python
+   - libselinux-python
+   - libsemanage-python
+
+- name: Configure SELinux to start mysql on any port
+  seboolean: name=mysql_connect_any state=true persistent=yes
+  when: ansible_selinux.status == "enabled"
+
+- name: Create Mysql configuration file
+  template: src=my.cnf.j2 dest=/etc/my.cnf
+  notify:
+  - restart mysql
+
+- name: Start Mysql Service
+  service: name=mysqld state=started enabled=yes
+```
+
+```yml
+--- # /roles/mysql/handlers/main.yml
+- name: restart mysql
+  service: name=mysqld state=restarted
+```
+
+```ini
+# /roles/mysql/templates/my.cnf.j2
+# 配置模板文件 + jinja2变量
+
+[mysqld]
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+user=mysql
+# Disabling symbolic-links is recommended to prevent assorted security risks
+symbolic-links=0
+port={{ mysql_port }}
+
+[mysqld_safe]
+log-error=/var/log/mysqld.log
+pid-file=/var/run/mysqld/mysqld.pid
+```
+
+
+
+## 剧本（Playbooks）
+
+### 分散式示例（合理）
+
+```yml
+--- # /site.yml
+- name: Install WordPress, MySQL, Nginx, and PHP-FPM
+  hosts: all # 对应host文件的分组或主机
+  remote_user: root
+  # remote_user: user
+  # become: yes
+  # become_method: sudo
+
+  roles: # 对应每个roles文件夹
+    - common
+    - mysql
+    - nginx
+    - php-fpm
+    - wordpress
+```
+
+### 集中式示例（测试）
+
+```yml
+--- # playbook-ex-Centralized.yml
+- hosts: centos-demo-1
+  tasks:
+  - name: Leaving a mark
+    file:
+      state: touch
+      dest: /tmp/1.txt
+    when:
+      - ansible_distribution == "CentOS"
+    notify:
+      - create another file
+
+  - name: test the include method
+    include: another_playbook.yml
+  
+  handlers:
+    - name: create another file
+      file:
+        state: touch
+        dest: /tmp/2.txt
+...
+```
+
+```yml
+--- # another_playbook.yml
+- name: when method
+  file:
+    state: touch
+    dest: /tmp/3.txt
+  when:
+    - ansible_distribution == "CentOS"
+  tags:
+    - test when method
+```
+
+运行测试：
+
+```bash
+# centos-control
+$ ansible-playbook -i hosts.yml playbook-ex-Centralized.yml
+# centos-demo
+$ ls /tmp
+```
+
+
+
+### Jinja2过滤器
 
 > https://docs.ansible.com/ansible/latest/user_guide/playbooks_filters.html
 
-##### 未定义变量的默认值
+#### 未定义变量的默认值
 
 ```jinja2
 {{ some_variable | default(5) }}
 {{ some_variable | default("default") }}
 ```
 
-##### 定义三元函数
+#### 定义三元函数
 
 ```jinja2
 # ANS_VER >= 1.9
@@ -74,13 +236,13 @@ all:
 {{ enable | ternary('no shutdown', 'shutdown', omit) }}
 ```
 
-##### 调试查看数据类型
+#### 调试查看数据类型
 
 ```jinja2
 {{ var | type_debug }}
 ```
 
-##### 字典列表互相转换
+#### 字典列表互相转换
 
 ```jinja2
 # dict -> list
@@ -93,13 +255,13 @@ all:
 {{ tags | items2dict（key_name='xxx', value_name='xxx' }}
 ```
 
-##### 强制类型转换(ANS_VER >= 1.6)
+#### 强制类型转换(ANS_VER >= 1.6)
 
 ```yml
 when: var | bool
 ```
 
-##### 格式化输出（YAML和JSON）
+#### 格式化输出（YAML和JSON）
 
 ```jinja2
 {{ var | to_json }} # 默认转换为ASCII
@@ -112,14 +274,14 @@ when: var | bool
 {{ var | from_yaml_all | list }} # 更多解析YAML文件的方式
 ```
 
-##### 数据结构取值
+#### 数据结构取值
 
 ```jinja2
 {{ [0,2] | map('extract', ['x','y','z']) | list }} -> ['x', 'z']
 {{ ['x','y'] | map('extract', {'x': 42, 'y': 31}) | list }} -> [42, 31]
 ```
 
-##### JSON查询
+#### JSON查询
 
 ```json
 {
@@ -190,7 +352,7 @@ ansible.builtin.debug:
     # server_name_query: "domain.server[?contains(name,'server1')].port"
 ```
 
-##### 数据统计
+#### 数据统计
 
 ```jinja2
 # 判断
@@ -205,7 +367,7 @@ ansible.builtin.debug:
 {{ list1 | intersect(list2) }} # 交集
 ```
 
-##### 网络管理
+#### 网络管理
 
 ```jinja2
 {{ myvar | ansible.netcommon.ipaddr }}
@@ -213,7 +375,7 @@ ansible.builtin.debug:
 {{ '192.0.2.1/24' | ansible.netcommon.ipaddr('address') }} # -> 192.168.0.1
 ```
 
-##### URL解析
+#### URL解析
 
 ```jinja2
 {{ 'Trollhättan' | urlencode }} # -> 'Trollh%C3%A4ttan'
@@ -239,7 +401,7 @@ ansible.builtin.debug:
 | query    | query=term                      |
 | fragment | fragment                        |
 
-##### 正则
+#### 正则
 
 ```jinja2
 {{ 'ansible' | regex_search('foobar') }} # -> ''
@@ -248,14 +410,14 @@ ansible.builtin.debug:
 {{ 'server1/database42' | regex_search('server([0-9]+)/database([0-9]+)', '\\1', '\\2') }} # -> ['1', '42']
 ```
 
-##### 文件与路径
+#### 文件与路径
 
 ```jinja2
 {{ "/etc/hosts" | basename }} -> "hosts"
 {{ path | dirname }}
 ```
 
-##### 字符串
+#### 字符串
 
 ```yml
 ansible.builtin.shell: echo {{ string_value | quote }} # 为字符串添加引号
@@ -267,7 +429,7 @@ ansible.builtin.shell: echo {{ string_value | quote }} # 为字符串添加引�
 
 
 
-#### 调试
+### 调试
 
 ```yml
 vars:
@@ -291,11 +453,9 @@ tasks:
     when: url is regex("example\.com/\w+/foo")
 ```
 
+### 查找
 
-
-#### 查找
-
-##### lookup("file", path_to_file)
+#### lookup("file", path_to_file)
 
 ```yml
   vars:
@@ -310,7 +470,7 @@ tasks:
 # }
 ```
 
-##### lookup("env", "HOME")
+#### lookup("env", "HOME")
 
 ```yml
   vars:
@@ -327,11 +487,19 @@ tasks:
 
 
 
-#### 模板（Templates）
+## 模块（Modules）
 
-##### python2和3的差异
+> https://docs.ansible.com/ansible/2.9/modules/modules_by_category.html
+
+### 概述
+
+```bash
+$ ansible-doc some-module
+$ ansible-doc -l # 列出所有模块
+```
 
 ```yml
+--- # python2 和 python3 的区别
 vars:
   hosts:
     testhost1: 127.0.0.2
@@ -348,13 +516,29 @@ tasks:
     loop: "{{ hosts.items() | list }}"
 ```
 
+> **模块返回值属性：**
+>
+> https://docs.ansible.com/ansible/2.9/reference_appendices/common_return_values.html
+
+
+
+### Services
+
+TODO：相关模块用法完善
+
+### Packages
+
+### Files
+
+### System commands
 
 
 
 
 
+## 集合（Collections）
 
-### 配置文件
+## 配置文件
 
 Changes can be made and used in a configuration file which will be searched for in the following order:
 

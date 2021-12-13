@@ -22,7 +22,7 @@
 - 被管理节点：Python 2 (version 2.6 or later) or Python 3 (version 3.5 or later)
 - 选用该被管理云中的机器作为控制节点更合适
 
-#### centos 7.0
+#### Centos 7.0
 
 ```bash
 # 添加sudo
@@ -51,7 +51,7 @@ sudo yum makecache
 
 
 
-#### debian 11.1
+#### Debian 11.1
 
 > <https://www.debian.org/doc/manuals/debian-handbook/sect.network-config.zh-cn.html>
 
@@ -72,7 +72,7 @@ vi /etc/network/interfaces
 
 
 
-#### ubuntu 20.04.3
+#### Ubuntu 20.04.3
 
 ```bash
 # 修改root密码
@@ -92,7 +92,7 @@ sudo /etc/init.d/ssh restart
 
 ### 控制节点的先决条件
 
-#### centos 7.0
+#### Centos 7.0
 
 ```bash
 # 安装python3.8和pip
@@ -134,7 +134,7 @@ python -m pip install --user paramiko
 sudo yum install sshpass
 ```
 
-#### ubuntu 20.04.3
+#### Ubuntu 20.04.3
 
 ```bash
 $ sudo apt update && sudo apt install python3-pip -y
@@ -231,8 +231,8 @@ $ python -m pip install --user paramiko
 ### 补充参数
 
 ```bash
+# 或在cfg配置文件直接修改
 export ANSIBLE_HOST_KEY_CHECKING=False
-
 ```
 
 
@@ -356,7 +356,9 @@ monitoring:
 
 
 
+### 数据备份实验（完整方案）
 
+TODO：templates应用
 
 
 

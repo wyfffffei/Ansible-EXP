@@ -1,15 +1,13 @@
-#!/bin/bash
+## 
+#  ad hoc commands examples
 
-# ad hoc commands
-# format: $ ansible [pattern] -m [module] -a "[module options]"
+#  format: $ ansible [pattern] -m [module] -a "[module options]"
 
-# @PARAM pattern: group/host  <-> √
-# @PARAM -i: inventroy        <-> √
-# @PARAM -m: module name
-# @PARAM -a: command/options
-# @PARAM -u: connector
-# @PARAM -K/--ask-become-pass: sudo/su..
-# @PARAM -f: parallel forks (default=5)
+#  @PARAM pattern: group/host  <-> √
+#  @PARAM -i: inventroy        <-> √
+#  @PARAM -m: module name
+#  @PARAM -a: command/options
+#  @PARAM -u: connector
 
 # simple examples
 # live command
@@ -61,6 +59,4 @@ $ ansible all -m ansible.builtin.template ..
 
 # playbooks | more: <https://docs.ansible.com/ansible/latest/user_guide/playbooks.html>
 # run the playbook
-$ ansible-playbook playbook.yml
-
-
+$ ansible-playbook -i iventory.yml playbook.yml
