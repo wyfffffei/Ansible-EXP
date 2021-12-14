@@ -46,89 +46,75 @@ all:
 
 
 
-## 结构（分散式）
+## 目录结构（分散式）
+
+### 模板
 
 ```yml
 ---
-inventory.yml # 库存↑
+inventory.yml 		# 库存↑
 
-playbook.yml # 剧本↓
-roles/ # 角色
+playbook.yml 		# 剧本↓
+roles/ 				# 角色
   common/
-    tasks/ # 任务
-    handlers/ # 处理者
-    files/ # 文件
-    templates/ # 模板
-    vars/ # 变量
-    defaults/ # 默认值
+    tasks/ 			# 任务
+    handlers/ 		# 处理者
+    files/ 			# 文件
+    templates/ 		# 模板
+    vars/ 			# 变量
+    defaults/ 		# 默认值
     meta/
   webservers/
     tasks/
     ..
 ```
 
-
-
-### roles / tasks + handlers + files
+### 示例（roles / tasks + templates + handlers）
 
 ```yml
---- # /roles/common/tasks/main.yml
-- name: Install libselinux-python
-  yum: name=libselinux-python state=present
+--- # /roles/mariadb/tasks/main.yml
+# This playbook will install MariaDB and create db user and give permissions.
 
-- name: Reload ansible_facts
-  setup:
-
-- name: Copy the EPEL repository definition
-  copy: src=epel.repo dest=/etc/yum.repos.d/epel.repo # /roles/common/files/epel.repo
-
-- name: Create the GPG key for EPEL
-  copy: src=RPM-GPG-KEY-EPEL-6 dest=/etc/pki/rpm-gpg
-
-- name: Set up iptables rules
-  copy: src=iptables-save dest=/etc/sysconfig/iptables
-  notify: restart iptables # -> 调用handlers
-```
-
-```yml
---- # /roles/common/handlers/main.yml -> 响应notify
-- name: restart iptables
-  service: name=iptables state=restarted
-```
-
-### roles / tasks + templates + handlers
-
-```yml
---- # /roles/mysql/tasks/main.yml
-- name: Install Mysql package
-  yum: name={{ item }} state=present
+- name: Install MariaDB package
+  yum: name={{ item }} state=installed
   with_items:
-   - mysql-server
+   - mariadb-server
    - MySQL-python
    - libselinux-python
    - libsemanage-python
 
 - name: Configure SELinux to start mysql on any port
   seboolean: name=mysql_connect_any state=true persistent=yes
-  when: ansible_selinux.status == "enabled"
 
 - name: Create Mysql configuration file
   template: src=my.cnf.j2 dest=/etc/my.cnf
   notify:
-  - restart mysql
+  - restart mariadb
 
-- name: Start Mysql Service
-  service: name=mysqld state=started enabled=yes
+- name: Create MariaDB log file
+  file: path=/var/log/mysqld.log state=touch owner=mysql group=mysql mode=0775
+
+  # 可能启动失败，进入运行 `sudo systemctl restart mariadb` ，再次运行playbook即可
+- name: Start MariaDB Service
+  service: name=mariadb state=started enabled=yes
+
+- name: insert firewalld rule
+  firewalld: port={{ mysql_port }}/tcp permanent=true state=enabled immediate=yes
+  ignore_errors: yes
+
 ```
 
 ```yml
---- # /roles/mysql/handlers/main.yml
-- name: restart mysql
-  service: name=mysqld state=restarted
+--- # /roles/mariadb/handlers/main.yml
+# Handler to handle DB tier notifications
+
+- name: restart mariadb
+  service: name=mariadb state=restarted
+
 ```
 
 ```ini
-# /roles/mysql/templates/my.cnf.j2
+# /roles/mariadb/templates/my.cnf.j2
 # 配置模板文件 + jinja2变量
 
 [mysqld]
@@ -141,7 +127,15 @@ port={{ mysql_port }}
 
 [mysqld_safe]
 log-error=/var/log/mysqld.log
-pid-file=/var/run/mysqld/mysqld.pid
+pid-file=/var/run/mariadb/mysqld.pid
+
+```
+
+```yml
+# /group_vars/all.yml
+# MySQL settings -> 存放变量
+mysqlservice: mysqld
+mysql_port: 3306
 ```
 
 
@@ -548,6 +542,3 @@ Changes can be made and used in a configuration file which will be searched for 
 > - `/etc/ansible/ansible.cfg`
 
 Ansible will process the above list and use the first file found, all others are ignored.
-
-
-

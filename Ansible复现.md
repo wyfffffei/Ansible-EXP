@@ -17,8 +17,8 @@
 
 ### 前提的前提
 
-- Ansible版本 2.12+
-- 控制节点：Python 3.8+
+- Ansible版本 2.9 (or later)
+- 控制节点：Python 2 (version 2.7) or Python 3 (version 3.5 or later)
 - 被管理节点：Python 2 (version 2.6 or later) or Python 3 (version 3.5 or later)
 - 选用该被管理云中的机器作为控制节点更合适
 
@@ -244,15 +244,14 @@ export ANSIBLE_HOST_KEY_CHECKING=False
 1. 直接配置
 
 ```bash
+# ansible -m ping 测试（ANS_VER == 2.9）
+$ echo ${ip} ansible_user="${remotename}" ansible_password="${remotepass}" > hosts
+$ ansible all -i hosts -m ping
+
 $ pwd
 > ~/.ssh
 $ ssh-keygen -t rsa
-
 $ ssh-copy-id -i $HOME/.ssh/id_rsa.pub "${remotename}"@${ip} -p 22
-
-# ansible -m ping 测试
-$ echo ${ip} > /etc/ansible/hosts
-$ ansible all -m ping
 
 # 登录检查
 $ ssh "${remotename}"@${ip}
@@ -356,11 +355,77 @@ monitoring:
 
 
 
-### 数据备份实验（完整方案）
+### 部署WordPress
 
-TODO：templates应用
+> 源代码：https://github.com/ansible/ansible-examples/tree/master/wordpress-nginx_rhel7
 
+#### 修改部分
 
+```yml
+--- # /site.yml
+- name: Install WordPress, MariaDB, Nginx, and PHP-FPM
+  # hosts: wordpress-server
+  hosts: centos-demo-1
+  remote_user: root
+  # ...
+```
+
+```yml
+--- # /hosts.yml
+webserver:
+  hosts:
+    centos-demo-1:
+      ansible_user: centos-demo-1
+      ansible_host: "{{ demo_1_host }}"
+      ansible_port: 22
+      ansible_password: "{{ demo_1_password }}"
+      ansible_ssh_private_key_file: /home/centos-control/.ssh/id_rsa
+      ansible_become: true
+      ansible_become_user: root
+      ansible_become_method: sudo
+      ansible_become_password: "{{ demo_1_password }}"
+```
+
+```yml
+--- # /group_vars/webserver.yml
+demo_1_host: "192.168.144.17"
+demo_1_password: "123456"
+```
+
+```yml
+--- # /roles/mariadb/tasks/main.yml
+  # ...
+  # 可能启动失败，进入运行 `sudo systemctl restart mariadb` ，再次运行playbook即可
+- name: Start MariaDB Service
+  service: name=mariadb state=started enabled=yes
+  # ...
+```
+
+```yml
+--- # /roles/php-fpm/tasks/main.yml
+- name: Install php-fpm and deps
+  	# ...
+    # - php-simplepie 不兼容php5.4
+
+- name: Disable default pool
+  command: mv /etc/php-fpm.d/www.conf /etc/php-fpm.d/www.disabled creates=/etc/php-fpm.d/www.disabled
+  notify: restart php-fpm
+
+- name: Copy php-fpm configuration
+  template: src=wordpress.conf dest=/etc/php-fpm.d/
+  notify: restart php-fpm
+
+```
+
+```bash
+$ ansible-playbook -i hosts.yml site.yml
+...
+$ curl -v 192.168.144.17
+```
+
+#### 撒花
+
+ ![wordpress-success](/images/wordpress-success.png)
 
 
 
