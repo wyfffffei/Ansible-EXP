@@ -54,7 +54,7 @@ $ ansible all -m ping -u bruce --become --become-user root
 
 # templates
 # template module | more: <https://docs.ansible.com/ansible/latest/collections/ansible/builtin/template_module.html#template-module>
-$ ansible all -m ansible.builtin.template ..
+$ ansible all -m ansible.builtin.template -a "src=/templates/file.j2 dest=/log/file.conf"
 
 
 # playbooks | more: <https://docs.ansible.com/ansible/latest/user_guide/playbooks.html>

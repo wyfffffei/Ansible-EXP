@@ -483,7 +483,7 @@ tasks:
 
 ## 模块（Modules）
 
-> https://docs.ansible.com/ansible/2.9/modules/modules_by_category.html
+> 索引：https://docs.ansible.com/ansible/2.9/modules/modules_by_category.html
 
 ### 概述
 
@@ -518,15 +518,120 @@ tasks:
 
 ### Services
 
-TODO：相关模块用法完善
+#### 启动apache服务
+
+```yml
+- name: start service apache
+  service:
+    name: httpd
+    state: started/restarted/stopped
+```
+
+#### 防火墙操作
+
+```yml
+- firewalld:
+    service: https
+    permanent: yes
+    state: enabled
+
+- firewalld:
+    port: 8081/tcp
+    permanent: yes
+    state: disabled
+```
+
+
 
 ### Packages
 
+#### 批量安装
+
+```yml
+- name: ensure a list of packages installed
+  yum:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - httpd
+    - httpd-tools
+```
+
+#### 远程仓库安装
+
+```yml
+- name: install the nginx rpm from a remote repo
+  yum:
+    name: http://nginx.org/packages/centos/6/noarch/RPMS/nginx-release-centos-6-0.el6.ngx.noarch.rpm
+    state: present
+```
+
+
+
 ### Files
+
+#### 拷贝
+
+```yml
+- name: Copy file with owner and permissions
+  copy:
+    src: /srv/myfiles/foo.conf
+    dest: /etc/foo.conf
+    owner: foo
+    group: foo
+    mode: '0644'
+```
+
+#### 携带变量拷贝
+
+```yml
+- name: Template a file to /etc/files.conf
+  template:
+    src: /mytemplates/foo.j2
+    dest: /etc/file.conf
+    owner: bin
+    group: wheel
+    mode: '0644'
+```
+
+
 
 ### System commands
 
+#### 命令行携带变量
 
+```yml
+# 'args' is a task keyword, passed at the same level as the module
+- name: Run command if /path/to/database does not exist (with 'args' keyword).
+  command: /usr/bin/make_database.sh db_user db_name
+  args:
+    creates: /path/to/database
+```
+
+#### 简单粗暴shell执行
+
+```yml
+# You can use shell to run other executables to perform actions inline
+- name: Run expect to wait for a successful PXE boot via out-of-band CIMC
+  # `|` 多行shell标记
+  shell: |
+    set timeout 300
+    spawn ssh admin@{{ cimc_host }}
+
+    expect "password:"
+    send "{{ cimc_password }}\n"
+
+    expect "\n{{ cimc_name }}"
+    send "connect host\n"
+
+    expect "pxeboot.n12"
+    send "\n"
+
+    exit 0
+  args:
+    executable: /usr/bin/expect
+  delegate_to: localhost
+```
 
 
 
