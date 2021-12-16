@@ -95,8 +95,11 @@ sudo /etc/init.d/ssh restart
 #### Centos 7.0
 
 ```bash
-# 安装python3.8和pip
+# 安装命令外壳
 sudo yum update && sudo yum install epel-release
+# sudo yum install python-argcomplete
+
+# 安装python3.8和pip（可选）
 sudo yum -y groupinstall "Development tools"
 sudo yum -y install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel
 sudo yum install libffi-devel -y

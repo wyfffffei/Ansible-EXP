@@ -639,7 +639,9 @@ tasks:
 
 ## 配置文件
 
-Changes can be made and used in a configuration file which will be searched for in the following order:
+Ansible默认核心配置文件是`/etc/ansible/ansible.cfg`，修改前建议备份，具体属性请参考网址：<https://docs.ansible.com/ansible/2.9/reference_appendices/config.html#ansible-configuration-settings>
+
+当然更好的办法是进行单独配置，Ansible读取配置文件的顺序是：
 
 > - `ANSIBLE_CONFIG` (environment variable if set)
 > - `ansible.cfg` (in the current directory)
