@@ -26,14 +26,14 @@ ansible --version
 
 链接：https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user
 
-![image-20211216144113666](\images\image-20211216144113666.png)
+![image-20211216144113666](images/image-20211216144113666.png)
 
 #### 连接远程主机
 
 1. 重启vscode
 2. 点击左下角图标，连接主机（控制节点）
 
-![image-20211216144421620](\images\image-20211216144421620.png)
+![image-20211216144421620](images/image-20211216144421620.png)
 
 3. 输入`用户名@密码`
 
@@ -54,7 +54,7 @@ ansible --version
 192.168.144.17 ansible_user="centos-demo-1" ansible_password="123456"
 ```
 
-![image-20211216145535372](\images\image-20211216145535372.png)
+![image-20211216145535372](images/image-20211216145535372.png)
 
 3. vscode上部点击`terminal`打开终端，依次执行
 
@@ -63,7 +63,7 @@ export ANSIBLE_HOST_KEY_CHECKING=False
 ansible all -i host -m ping
 ```
 
-![image-20211216150246959](\images\image-20211216150246959.png)
+![image-20211216150246959](images/image-20211216150246959.png)
 
 返回`success`，通信建立成功
 
@@ -79,7 +79,7 @@ ansible all -i host -m ping
 ansible all -i host -a "/usr/sbin/ip a"
 ```
 
-![image-20211216151100580](\images\image-20211216151100580.png)
+![image-20211216151100580](images/image-20211216151100580.png)
 
 
 
@@ -89,7 +89,7 @@ ansible all -i host -a "/usr/sbin/ip a"
 ansible all -i host -m file -a "state=touch dest=~/1.txt mode=777"
 ```
 
-![image-20211216151826564](\images\image-20211216151826564.png)
+![image-20211216151826564](images/image-20211216151826564.png)
 
 
 
@@ -116,7 +116,7 @@ ansible all -i host -m file -a "state=touch dest=~/1.txt mode=777"
 ansible-playbook -i host playbook.yml
 ```
 
-![image-20211216152711280](\images\image-20211216152711280.png)
+![image-20211216152711280](images/image-20211216152711280.png)
 
 2. 返回成功，这个任务一下子执行了两条任务，不过`ip a`命令并没有返回信息，修改`playbook.yml`文件，添加一个调试任务返回信息
 
@@ -138,7 +138,7 @@ ansible-playbook -i host playbook.yml
         mode: 777
 ```
 
-![image-20211216154008038](\images\image-20211216154008038.png)
+![image-20211216154008038](images/image-20211216154008038.png)
 
 
 
@@ -166,7 +166,7 @@ ansible-playbook -i host playbook.yml
 
 ```
 
-![image-20211216160019186](\images\image-20211216160019186.png)
+![image-20211216160019186](images/image-20211216160019186.png)
 
 **注意：remote_src属性默认为no，指将控制主机文件拷贝到被管理主机，改为yes指远程主机自己拷贝自己；debug任务可删**
 
@@ -178,7 +178,7 @@ ansible-playbook -i host playbook.yml
 
 1. 如图运行
 
-![image-20211216160530162](\images\image-20211216160530162.png)
+![image-20211216160530162](images/image-20211216160530162.png)
 
 发现提示权限不足，这是因为我们是以普通用户方式登录，需要修改`host`文件，添加提权选项
 
@@ -192,7 +192,7 @@ ansible-playbook -i host playbook.yml
 192.168.144.17 ansible_user="centos-demo-1" ansible_password="123456" ansible_become=true ansible_become_user="root" ansible_become_password="123456"
 ```
 
-![image-20211216160939091](\images\image-20211216160939091.png)
+![image-20211216160939091](images/image-20211216160939091.png)
 
 
 
@@ -200,7 +200,7 @@ ansible-playbook -i host playbook.yml
 
 **同命令：**`firewall-cmd --permanent --add-port=8081/tcp`
 
-![image-20211216161515097](\images\image-20211216161515097.png)
+![image-20211216161515097](images/image-20211216161515097.png)
 
 
 
@@ -208,7 +208,7 @@ ansible-playbook -i host playbook.yml
 
 **同命令：**`sudo systemctl restart firewalld`
 
-![image-20211216161802513](\images\image-20211216161802513.png)
+![image-20211216161802513](images/image-20211216161802513.png)
 
 
 
