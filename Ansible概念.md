@@ -210,6 +210,59 @@ $ ls /tmp
 
 
 
+### 变量
+
+#### 在playbook中定义
+
+```yml
+- hosts: webserver
+  vars:
+    http_port: 80
+```
+
+#### 在inventory中定义
+
+```ini
+[webserver]
+host1 http_port=80 ...
+```
+
+#### 在template中使用
+
+```jinja2
+xxx xxx {{ http_port }}
+```
+
+#### 返回变量
+
+```yml
+- hosts: webservers
+  tasks:
+    - shell: /usr/bin/foo
+      register: foo_result
+      ignore_errors: true
+    - shell: /usr/bin/bar
+      when: foo_result.rc == 5
+```
+
+#### 判断
+
+```jinja2
+{% if 'webserver' in group_names %}
+   # some part of a configuration file that only applies to webservers
+{% endif %}
+```
+
+#### 循环
+
+```jinja2
+{% for host in groups['app_servers'] %}
+   {{ hostvars[host]['ansible_facts']['eth0']['ipv4']['address'] }}
+{% endfor %}
+```
+
+
+
 ### Jinja2过滤器
 
 > https://docs.ansible.com/ansible/latest/user_guide/playbooks_filters.html
@@ -634,8 +687,6 @@ tasks:
 ```
 
 
-
-## 集合（Collections）
 
 ## 配置文件
 
