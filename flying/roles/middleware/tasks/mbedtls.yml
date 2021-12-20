@@ -4,22 +4,28 @@
     url: "{{ mbedtls_url }}"
     dest: "{{ mbedtls_path }}.tar.gz"
 
+- name: create the mbedtls directory
+  file:
+    path: "{{ mbedtls_path }}"
+    state: directory
+    mode: '0744'
+
 - name: unarchive the package
   unarchive:
     remote_src: yes
     src: "{{ mbedtls_path }}.tar.gz"
     dest: "{{ mbedtls_path }}"
 
+# gcc version < 5.0 需要强制使用c99标准
+# gcc version > 5.0 comand: make SHARED=1 CFLAGS=-fPIC
 - name: make
-  make:
-    chdir: {{ mbedtls_path }}
-    params:
-      SHARED: 1
-      CFLAGS: -fPIC
+  command:  CC='gcc --std=c99' make
+  args:
+    chdir: "{{ mbedtls_untar_path }}"
 
 - name: make install
   make:
-    chdir: {{ mbedtls_path }}
+    chdir: "{{ mbedtls_untar_path }}"
     target: install
     params:
       DESTDIR: /usr
@@ -27,4 +33,4 @@
 - name: ldconfig
   command: ldconfig
   args:
-    chdir: {{ mbedtls_path }}
+    chdir: "{{ mbedtls_untar_path }}"

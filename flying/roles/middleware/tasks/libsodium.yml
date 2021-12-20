@@ -4,28 +4,34 @@
     url: "{{ libsodium_url }}"
     dest: "{{ libsodium_path }}.tar.gz"
 
+- name: create the libsodium directory
+  file:
+    path: "{{ libsodium_path }}"
+    state: directory
+    mode: '0744'
+
 - name: unarchive the package
   unarchive:
     remote_src: yes
     src: "{{ libsodium_path }}.tar.gz"
-    dest: {{ libsodium_path }}
+    dest: "{{ libsodium_path }}"
 
 - name: configure the package
   shell: ./configure --prefix=/usr
   args:
-    chdir: {{ libsodium_path }}
+    chdir: "{{ libsodium_untar_path }}"
     creates: config.status
 
 - name: make
   make:
-    chdir: {{ libsodium_path }}
+    chdir: "{{ libsodium_untar_path }}"
 
 - name: make install
   make:
-    chdir: {{ libsodium_path }}
+    chdir: "{{ libsodium_untar_path }}"
     target: install
 
 - name: ldconfig
   command: ldconfig
   args:
-    chdir: {{ libsodium_path }}
+    chdir: "{{ libsodium_untar_path }}"

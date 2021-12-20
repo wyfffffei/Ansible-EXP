@@ -4,10 +4,12 @@
 # libsodium
 libsodium_url: "https://download.libsodium.org/libsodium/releases/LATEST.tar.gz"
 libsodium_path: "/root/libsodium"
+libsodium_untar_path: "/root/libsodium/libsodium-stable"
 
 # mbedtls
-mbedtls_url: "https://github.com/ARMmbed/mbedtls/archive/refs/tags/v2.27.0.tar.gz"
+mbedtls_url: "https://github.com/ARMmbed/mbedtls/archive/refs/tags/v3.1.0.tar.gz"
 mbedtls_path: "/root/mbedtls"
+mbedtls_untar_path: "/root/mbedtls/mbedtls-3.1.0"
 
 # simple-obfs
 simple_obfs_url: "https://github.com/shadowsocks/simple-obfs.git"

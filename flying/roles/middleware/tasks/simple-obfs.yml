@@ -2,7 +2,7 @@
 - name: install the dependencies
   yum:
     state: latest
-    names: "{{ packages }}"
+    name: "{{ packages }}"
   vars:
     packages:
     - zlib-devel
@@ -16,23 +16,23 @@
 - name: upgrade the source codes
   command: git submodule update --init --recursive
   args:
-    chdir: {{ simple_obfs_path }}
+    chdir: "{{ simple_obfs_path }}"
 
 - name: run the init bash
   shell: autogen.sh
   args:
-    chdir: {{ simple_obfs_path }}
+    chdir: "{{ simple_obfs_path }}"
 
 - name: configure the package
   command: configure
   args:
-    chdir: {{ simple_obfs_path }}
+    chdir: "{{ simple_obfs_path }}"
 
 - name: make
   make:
-    chdir: {{ simple_obfs_path }}
+    chdir: "{{ simple_obfs_path }}"
 
 - name: make install
   make:
-    chdir: {{ simple_obfs_path }}
+    chdir: "{{ simple_obfs_path }}"
     target: install

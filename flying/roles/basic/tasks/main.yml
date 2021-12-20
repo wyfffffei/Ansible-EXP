@@ -2,7 +2,7 @@
 - name: basic tools install
   yum:
     state: latest
-    names: "{{ packages }}"
+    name: "{{ packages }}"
   vars:
     packages:
     - wget
@@ -13,7 +13,7 @@
 - name: configure tools install
   yum:
     state: latest
-    names: "{{ packages }}"
+    name: "{{ packages }}"
   vars:
     packages:
     - epel-release
