@@ -1,0 +1,30 @@
+--- # install the mbedtls
+- name: download the source codes
+  get_url:
+    url: "{{ mbedtls_url }}"
+    dest: "{{ mbedtls_path }}.tar.gz"
+
+- name: unarchive the package
+  unarchive:
+    remote_src: yes
+    src: "{{ mbedtls_path }}.tar.gz"
+    dest: "{{ mbedtls_path }}"
+
+- name: make
+  make:
+    chdir: {{ mbedtls_path }}
+    params:
+      SHARED: 1
+      CFLAGS: -fPIC
+
+- name: make install
+  make:
+    chdir: {{ mbedtls_path }}
+    target: install
+    params:
+      DESTDIR: /usr
+
+- name: ldconfig
+  command: ldconfig
+  args:
+    chdir: {{ mbedtls_path }}

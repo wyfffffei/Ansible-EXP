@@ -1,0 +1,46 @@
+--- # run the flying
+- name: create the conf directory
+  file:
+    path: /etc/shadowsocks-libev
+    state: directory
+    mode: '0744'
+
+- name: add the server conf file
+  templates:
+    src: /templates/server-config.json.j2
+    dest: /etc/shadowsocks-libev/server-config.json
+
+- name: firewall enable
+  firewalld:
+    port: "{{ items }}"
+    zone: public
+    permanent: yes
+    state: enabled
+  vars:
+    items:
+    - "{{ open_port }}/tcp"
+    - "{{ open_port }}/udp"
+  notify:
+    - restart the firewall
+    
+- name: start the flying
+  command: nohup ss-server -c /etc/shadowsocks-libev/server-config.json &
+
+- name: download the kcptun codes
+  get_url:
+    url: "{{ kcptun_url }}"
+    dest: "{{ kcptun_path }}/kcptun.tar.gz"
+
+- name: unarchive the package
+  unarchive:
+    remote_src: yes
+    src: "{{ kcptun_path }}/kcptun.tar.gz"
+    dest: "{{ kcptun_path }}"
+
+- name: add the kcptun conf file
+  templates:
+    src: /templates/server-config.json.j2
+    dest: "{{ kcptun_path }}/kcptun-config.json"
+
+- name: start the kcptun
+  command: nohup /usr/local/kcptun/server_linux_amd64 -c /usr/local/kcptun/kcptun-config.json &

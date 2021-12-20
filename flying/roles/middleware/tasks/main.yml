@@ -1,0 +1,9 @@
+--- # install the middleware
+- name: install libsodium
+  include: libsodium.yml
+
+- name: install mbedtls
+  include: mbedtls.yml
+
+- name: install simple-obfs
+  include: simple-obfs.yml

@@ -1,0 +1,38 @@
+--- # install the simple-obfs
+- name: install the dependencies
+  yum:
+    state: latest
+    names: "{{ packages }}"
+  vars:
+    packages:
+    - zlib-devel
+    - openssl-devel
+
+- name: download the source codes
+  command: git clone "{{ simple_obfs_url }}"
+  args:
+    chdir: /root
+
+- name: upgrade the source codes
+  command: git submodule update --init --recursive
+  args:
+    chdir: {{ simple_obfs_path }}
+
+- name: run the init bash
+  shell: autogen.sh
+  args:
+    chdir: {{ simple_obfs_path }}
+
+- name: configure the package
+  command: configure
+  args:
+    chdir: {{ simple_obfs_path }}
+
+- name: make
+  make:
+    chdir: {{ simple_obfs_path }}
+
+- name: make install
+  make:
+    chdir: {{ simple_obfs_path }}
+    target: install

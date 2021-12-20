@@ -1,0 +1,31 @@
+--- # basic install
+- name: basic tools install
+  yum:
+    state: latest
+    names: "{{ packages }}"
+  vars:
+    packages:
+    - wget
+    - vim
+    - git
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: configure tools install
+  yum:
+    state: latest
+    names: "{{ packages }}"
+  vars:
+    packages:
+    - epel-release
+    - gcc
+    - gettext
+    - autoconf
+    - libtool
+    - automake
+    - make
+    - asciidoc
+    - xmlto
+    - c-ares-devel
+    - libev-devel
+    - pcre-devel
+...

@@ -1,0 +1,16 @@
+{
+  "listen": "{{ remote_host }}:6666",
+  "target": "127.0.0.1:1080",
+  "key": "{{ remote_password }}",
+  "crypt": "aes-256-gcm",
+  "mode": "fast2",
+  "mtu": 1350,
+  "sndwnd": 512,
+  "rcvwnd": 512,
+  "datashard": 10,
+  "parityshard": 3,
+  "dscp": 0,
+  "nocomp": false,
+  "quiet": false,
+  "pprof": false
+}

@@ -1,0 +1,23 @@
+---
+## source website and the installed path
+
+# libsodium
+libsodium_url: "https://download.libsodium.org/libsodium/releases/LATEST.tar.gz"
+libsodium_path: "/root/libsodium"
+
+# mbedtls
+mbedtls_url: "https://github.com/ARMmbed/mbedtls/archive/refs/tags/v2.27.0.tar.gz"
+mbedtls_path: "/root/mbedtls"
+
+# simple-obfs
+simple_obfs_url: "https://github.com/shadowsocks/simple-obfs.git"
+simple_obfs_path: "/root/simple-obfs"
+
+# shadowsocks
+shadowsocks_url: "https://github.com/shadowsocks/shadowsocks-libev.git"
+shadowsocks_path: "/root/shadowsocks-libev"
+
+# kcptun
+kcptun_url: "https://github.com/xtaci/kcptun/releases/download/v20210922/kcptun-linux-amd64-20210922.tar.gz"
+kcptun_path: "/usr/local/kcptun"
+...
