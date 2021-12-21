@@ -1,5 +1,5 @@
 --- # install the simple-obfs
-- name: install the dependencies
+- name: simple_obfs -> install the dependencies
   yum:
     state: latest
     name: "{{ packages }}"
@@ -8,31 +8,38 @@
     - zlib-devel
     - openssl-devel
 
-- name: download the source codes
+- name: simple_obfs -> check if the codes exist
+  stat:
+    path: "{{ simple_obfs_url }}"
+  register: simple_obfs_dir
+
+- name: simple_obfs -> download the source codes
   command: git clone "{{ simple_obfs_url }}"
   args:
-    chdir: /root
+    chdir: "/root"
+    creates: "{{ simple_obfs_path }}"
+  when: not simple_obfs_dir.stat.exists
 
-- name: upgrade the source codes
+- name: simple_obfs -> upgrade the source codes
   command: git submodule update --init --recursive
   args:
     chdir: "{{ simple_obfs_path }}"
 
-- name: run the init bash
-  shell: autogen.sh
+- name: simple_obfs -> run the init bash
+  shell: ./autogen.sh
   args:
     chdir: "{{ simple_obfs_path }}"
 
-- name: configure the package
-  command: configure
+- name: simple_obfs -> configure the package
+  command: ./configure
   args:
     chdir: "{{ simple_obfs_path }}"
 
-- name: make
+- name: simple_obfs -> make
   make:
     chdir: "{{ simple_obfs_path }}"
 
-- name: make install
+- name: simple_obfs -> make install
   make:
     chdir: "{{ simple_obfs_path }}"
     target: install

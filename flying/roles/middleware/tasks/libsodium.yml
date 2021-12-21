@@ -1,37 +1,43 @@
 --- # install the libsodium
-- name: download the source codes
+- name: libsodium -> check if the codes exist
+  stat:
+    path: "{{ libsodium_path }}.tar.gz"
+  register: libsodium_code
+
+- name: libsodium -> download the source codes
   get_url:
     url: "{{ libsodium_url }}"
     dest: "{{ libsodium_path }}.tar.gz"
+  when: not libsodium_code.stat.exists
 
-- name: create the libsodium directory
+- name: libsodium -> create the libsodium directory
   file:
     path: "{{ libsodium_path }}"
     state: directory
     mode: '0744'
 
-- name: unarchive the package
+- name: libsodium -> unarchive the package
   unarchive:
     remote_src: yes
     src: "{{ libsodium_path }}.tar.gz"
     dest: "{{ libsodium_path }}"
 
-- name: configure the package
+- name: libsodium -> configure the package
   shell: ./configure --prefix=/usr
   args:
     chdir: "{{ libsodium_untar_path }}"
     creates: config.status
 
-- name: make
+- name: libsodium -> make
   make:
     chdir: "{{ libsodium_untar_path }}"
 
-- name: make install
+- name: libsodium -> make install
   make:
     chdir: "{{ libsodium_untar_path }}"
     target: install
 
-- name: ldconfig
+- name: libsodium -> ldconfig
   command: ldconfig
   args:
     chdir: "{{ libsodium_untar_path }}"

@@ -1,29 +1,30 @@
 --- # install the shadowsocks
-- name: download the source codes
+- name: shadowsocks -> download the source codes
   command: git clone "{{ shadowsocks_url }}"
   args:
-    chdir: /root
+    chdir: "/root"
+    creates: "{{ shadowsocks_path }}"
 
-- name: upgrade the source codes
+- name: shadowsocks -> upgrade the source codes
   command: git submodule update --init --recursive
   args:
     chdir: "{{ shadowsocks_path }}"
 
-- name: run the init bash
-  shell: autogen.sh
+- name: shadowsocks -> run the init bash
+  shell: ./autogen.sh
   args:
     chdir: "{{ shadowsocks_path }}"
 
-- name: configure
-  command: configure
+- name: shadowsocks -> configure
+  command: ./configure
   args:
     chdir: "{{ shadowsocks_path }}"
 
-- name: make
+- name: shadowsocks -> make
   make:
     chdir: "{{ shadowsocks_path }}"
 
-- name: make install
+- name: shadowsocks -> make install
   make:
     chdir: "{{ shadowsocks_path }}"
     target: install

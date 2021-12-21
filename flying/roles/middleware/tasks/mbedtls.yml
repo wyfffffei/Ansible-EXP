@@ -1,16 +1,22 @@
 --- # install the mbedtls
-- name: download the source codes
+- name: mbedtls -> check if the codes exist
+  stat:
+    path: "{{ mbedtls_path }}.tar.gz"
+  register: mbedtls_code
+
+- name: mbedtls -> download the source codes
   get_url:
     url: "{{ mbedtls_url }}"
     dest: "{{ mbedtls_path }}.tar.gz"
+  when: not mbedtls_code.stat.exists
 
-- name: create the mbedtls directory
+- name: mbedtls -> create the mbedtls directory
   file:
     path: "{{ mbedtls_path }}"
     state: directory
     mode: '0744'
 
-- name: unarchive the package
+- name: mbedtls -> unarchive the package
   unarchive:
     remote_src: yes
     src: "{{ mbedtls_path }}.tar.gz"
@@ -18,19 +24,21 @@
 
 # gcc version < 5.0 需要强制使用c99标准
 # gcc version > 5.0 comand: make SHARED=1 CFLAGS=-fPIC
-- name: make
-  command:  CC='gcc --std=c99' make
-  args:
+- name: mbedtls -> make
+  make:
     chdir: "{{ mbedtls_untar_path }}"
+    params:
+      SHARED: 1
+      CC: 'gcc --std=c99'
 
-- name: make install
+- name: mbedtls -> make install
   make:
     chdir: "{{ mbedtls_untar_path }}"
     target: install
     params:
       DESTDIR: /usr
 
-- name: ldconfig
+- name: mbedtls -> ldconfig
   command: ldconfig
   args:
     chdir: "{{ mbedtls_untar_path }}"
