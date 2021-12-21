@@ -12,6 +12,6 @@ then
     yum install python3 -y
 fi
 
-python3 -m pip install --user paramiko -y
+python3 -m pip install --user paramiko
 # pip install --user -i https://pypi.tuna.tsinghua.edu.cn/simple paramiko -y
 sudo yum install sshpass -y

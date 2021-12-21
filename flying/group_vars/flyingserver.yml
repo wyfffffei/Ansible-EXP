@@ -1,5 +1,5 @@
 --- # 文件名需和`inventory`中的`组名`一致
-remote_host: "45.77.73.36"
-remote_password: "*wE9J[5W.ounQoy," 
-open_port: 55555
+remote_host: "xxx"
+remote_password: "xxxx" 
+open_port: xxx
 ...
