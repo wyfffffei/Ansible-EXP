@@ -10,27 +10,22 @@
     src: server-config.json.j2
     dest: /etc/shadowsocks-libev/server-config.json
 
-# - name: run -> firewall enable tcp
-#   firewalld:
-#     port: "{{ open_port }}/tcp"
-#     zone: public
-#     permanent: yes
-#     state: enabled
-
-# - name: run -> firewall enable udp
-#   firewalld:
-#     port: "{{ open_port }}/udp"
-#     zone: public
-#     permanent: yes
-#     state: enabled
-
-- name: run -> shut down the firewall
+- name: run -> firewall enable
   service:
     name: firewalld
-    state: stopped
-    
-# - name: run -> firewall enable port-forward
-#   command: firewall-cmd --add-forward
+    state: started
+    enabled: yes
+
+- name: run -> firewall add tcp port
+  command: firewall-cmd --permanent --zone=public --add-port={{ open_port }}/tcp
+
+- name: run -> firewall add udp port
+  command: firewall-cmd --permanent --zone=public --add-port={{ open_port }}/udp
+
+- name: run -> firewall reload
+  service:
+    name: firewalld
+    state: reloaded
 
 - name: run -> start the flying
   shell: nohup ss-server -c /etc/shadowsocks-libev/server-config.json &
