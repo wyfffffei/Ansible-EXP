@@ -34,5 +34,5 @@
 
 ## 应用步骤
 
-1. 进入实验文件夹，修改host文件和group_vars/host_vars文件夹下的变量文件
+1. 进入实验文件夹，修改 `host` 文件和 `group_vars` / `host_vars` 文件夹下的变量文件
 2. `ansible-playbook -i hosts.yml playbook.yml`
